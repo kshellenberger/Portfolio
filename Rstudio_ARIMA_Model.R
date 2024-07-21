@@ -1,57 +1,99 @@
 library(tidyverse)
-library(stats)
-library(aTSA)
-library(TTR)
-install.packages("TTR")
-#read in file
-setwd("C:\\Users\\Kim\\Desktop\\D213\\")
-m <-read.csv ("med.csv")
-m
+library(ggplot2)
+library(tseries)
+library(seasonal)
+library(forecast)
+library(rmarkdown)
+library(knitr)
+            
+# Load and inspect the data
+data <- read.csv('/Users/kimshellenberger/Desktop/medical_time_series .csv')
+head(data)
+str(data)
 
-#Run a time series
-t <- ts(m$Revenue, start = 0, frequency = 365)
-head(t)
+# 1. Line graph visualization
+ggplot(data, aes(x = Day, y = Revenue)) +
+  geom_line() +
+  labs(title = "Time Series Visualization",
+       x = "Day",
+       y = "Revenue")
 
-#plot time series
-ts.plot(t, xlab = "Year", ylab = "Revenue in Millions", main = "Time Series - Revenue")
 
-#Dickey Fuller test
-adf.test(m$Revenue)
+# Check for any gaps in measurement
+print(paste("Any gaps in measurement:", any(diff(data$Day) != time_step)))
 
-#differencing b/c of non-stationarity
-dt <- diff(m$Revenue)
-adf.test(dt)
+# Length of the sequence
+length_sequence <- nrow(data)
 
-#time seried using the staionary data
-dtts <- ts(dt, start = 0, frequency = 365 )
 
-#plot time series
-ts.plot(dtts, xlab = "Year", ylab = "Revenue in Millions", main = "Time Series Stationary - Revenue")
+# 3. Evaluate stationarity
+adf.test(data$Revenue)
 
-train <- ts(dt[c(1:(length(dt)*.6))], start = 0, frequency = 365)
-test <- ts(dt[-c(1:(length(dt)*.4))], start = 0, frequency = 365)
-write_csv(as.data.frame(dt), "med_clean.csv")
-capture.output(summary(test), file = "test.csv")
-capture.output(summary(train), file = "train.csv")
+# Take first-order difference to remove trend
+data$diff_revenue <- c(NA, diff(data$Revenue))
 
-#decompose for seasonality
-de <- decompose(t, type = "additive")
-plot(de)
+# Evaluate stationarity
+adf_result <- adf.test(data$diff_revenue[-1], alternative = "stationary")
+print(adf_result)
 
-#Autocorrelation
-acf(dtts, lag.max = 12)
+# Data preparation and train-test split
+length_sequence <- nrow(data)
+train_size <- round(0.8 * length_sequence)
+train_data <- data[1:train_size, ]
+test_data <- data[(train_size + 1):length_sequence, ]
 
-#Box test
-Box.test(dtts, lag=12, type="Ljung-Box")
+# Part IV: Model Identification and Analysis
+# Write train data to CSV
+write.csv(train_data, file = "/Users/kimshellenberger/Desktop/train_data.csv", row.names = FALSE)
 
-spec <- spectrum(dtts, log='no', span = 365, plot =TRUE)
+# Write test data to CSV
+write.csv(test_data, file = "/Users/kimshellenberger/Desktop/test_data.csv", row.names = FALSE)
 
-arima(med, order = c(0L, 0L, 0L),
-      seasonal = list(order = c(0L, 0L, 0L), period = NA),
-      xreg = NULL, include.mean = TRUE,
-      transform.pars = TRUE,
-      fixed = NULL, init = NULL,
-      method = c("CSS-ML", "ML", "CSS"), n.cond,
-      SSinit = c("Gardner1980", "Rossignol2011"),
-      optim.method = "BFGS",
-      optim.control = list(), kappa = 1e6)
+# Decompose the time series using the original Revenue series
+decomposed_ts <- decompose(ts(data$Revenue, frequency = 2), "multiplicative")
+
+# Plot the decomposed components
+plot(decomposed_ts)
+
+# Check autocorrelation function
+acf(data$Revenue)
+# Plot autocorrelation function
+acf(data$Revenue, main = "Autocorrelation Function", lag.max = 20)
+
+# Check spectral density
+spec.pgram(data$Revenue)
+
+# Identify ARIMA model
+arima_model <- auto.arima(data$Revenue)
+arima_model 
+
+# Perform forecast
+forecast_result <- forecast(arima_model, h = 120)
+forecast_result
+
+# Ensure same length of test data and forecasted values
+test_data <- test_data[1:min(length(test_data$Revenue), length(forecast_result$mean)), ]
+forecast_values <- forecast_result$mean[1:min(length(test_data$Revenue), length(forecast_result$mean))]
+
+# Remove NA values from test data and forecasted values
+test_data <- test_data[!is.na(test_data$Revenue), ]
+forecast_values <- forecast_values[!is.na(test_data$Revenue)]
+
+# Calculate RMSE
+rmse <- sqrt(mean((test_data$Revenue - forecast_values)^2))
+
+#residual plot
+residplot(forecast_result)
+
+# Print RMSE
+print(paste("RMSE:", round(rmse, 4)))
+
+# Plot forecast with training, test data, and 95% confidence interval
+plot(forecast_result, main = "Forecast with 95% Confidence Interval")
+lines(train_data$Day, train_data$Revenue, col = "blue")  # Train data
+lines(test_data$Day, test_data$Revenue, col = "red")    # Test data
+lines(forecast_result$mean, col = "black")              # Forecast
+lines(forecast_result$lower[,2], col = "green", lty = 2) # 95% confidence interval lower bound
+lines(forecast_result$upper[,2], col = "green", lty = 2) # 95% confidence interval upper bound
+legend("topleft", legend = c("Train Data", "Test Data", "Forecast", "95% Confidence Interval"), 
+       col = c("blue", "red", "black", "green"), lty = c(1, 1, 1, 2))
