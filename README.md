@@ -1,5 +1,14 @@
 # Portfolio
-Healthcare - Risk Analytics Samples
+Healthcare Analytics 
+
+CLARA PowerPoint 
+- Hackaton project presentation deck (1st Place Winners)
+- My role was project manager
+  - Ideating
+  - Scoping
+  - Project plan
+  - Resource tracking
+    
 
 Excel_Medical_Economics_Trend_Analysis_Simulation_KS.xlsx
 - Simulated medical economics analysis for a single calendar year.
