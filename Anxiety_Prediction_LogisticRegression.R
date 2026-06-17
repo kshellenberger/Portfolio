@@ -9,9 +9,7 @@
 ################################################################################
 
 # SECTION 1: LOAD REQUIRED PACKAGES
-library(summarytools)  # Summary statistics
 library(ggplot2)       # Data visualization
-library(plotly)        # Interactive plots
 library(mosaic)        # Mosaic plots for categorical data
 library(caret)         # Classification and regression tools
 library(tidyverse)     # Data manipulation suite
@@ -47,8 +45,8 @@ table(med$Anxiety)
 
 # SECTION 6: EXPLORATORY DATA ANALYSIS
 # Univariate statistics for independent variables
-descr(i_var)
-descr(med$Anxiety)
+print(summary(i_var))
+print(table(med$Anxiety))
 
 # Boxplot visualization of survey responses
 boxplot(i_var,

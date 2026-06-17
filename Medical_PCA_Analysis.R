@@ -137,12 +137,9 @@ medical_raw_data$Overweight<-replace(medical_raw_data$Overweight,is.na(medical_r
 #Proof NA are eliminated
 colSums(is.na(medical_raw_data))
 
-# Write clean data to .csv
-write.csv(medical_raw_data, "C:\\Users\\Kim\\Desktop\\D206\\D206_medical_clean.csv", row.names=FALSE)
-
-#Read in the clean .csv and limit the PCA test to the 11 necessary columns - Run PCA
+# Use the already-cleaned in-memory object directly
 library(tidyverse)
-medical_clean <-read.csv ("C:\\Users\\Kim\\Desktop\\D206\\D206_medical_clean.csv")
+medical_clean <- medical_raw_data
 PCA_test <-medical_clean[,c(11,15:16,19,23:26,42:44)]
 PCA_test1 <-prcomp(PCA_test[,c(1:11)], center=TRUE, scale. = TRUE)
 PCA_test1$rotation

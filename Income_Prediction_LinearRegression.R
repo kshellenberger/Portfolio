@@ -9,10 +9,7 @@
 ################################################################################
 
 # SECTION 1: LOAD REQUIRED PACKAGES
-library(summarytools)  # Summary statistics
 library(ggplot2)       # Data visualization
-library(plotly)        # Interactive plots
-library(mosaic)        # Mosaic plots for categorical data
 library(tidyverse)     # Data manipulation suite
 
 # SECTION 2: LOAD DATA
@@ -26,8 +23,8 @@ i_var <- med[, c(43:50)]
 
 # SECTION 4: EXPLORATORY DATA ANALYSIS
 # Univariate statistics for dependent variable (Income)
-descr(med$Income)
-descr(i_var)
+print(summary(med$Income))
+print(summary(i_var))
 
 # SECTION 5: DATA VISUALIZATION
 # Boxplot of survey responses distribution
@@ -70,10 +67,10 @@ ggplot(all_var,
                      limits = c(0, 225000)) +
   scale_x_continuous(breaks = seq(1:8), 
                      limits=c(0, 8)) + 
-  labs(x = "Survey Item 1 Response\",
-       y = "Annual Income\",
-       title = \"Survey Responses vs. Income\",
-       subtitle = \"Item 1 - Interpretation of slope indicates effect on income\")"
+  labs(x = "Survey Item 1 Response",
+       y = "Annual Income",
+       title = "Survey Responses vs. Income",
+       subtitle = "Item 1 - Interpretation of slope indicates effect on income")
 
 #Item 2
 ggplot(all_var, 

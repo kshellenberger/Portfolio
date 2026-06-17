@@ -10,12 +10,10 @@
 # SECTION 1: LOAD REQUIRED PACKAGES
 # Note: Install packages manually if needed using install.packages()
 library(ggplot2)       # Data visualization
-library(dvmisc)        # Statistical utilities        # Statistical utilities
+library(dvmisc)        # Statistical utilities
 library(infer)         # Statistical inference
 library(plyr)          # Data manipulation
 library(pastecs)       # Descriptive statistics
-library(plotly)        # Interactive visualizations
-library(summarytools)  # Summary statistics
 library(tidyverse)     # Data manipulation suite
 library(dplyr)         # Data frame operations
 
@@ -26,7 +24,7 @@ med <- read.csv("medical_clean.csv")  # Load medical dataset
 # SECTION 3: EXPLORATORY DATA ANALYSIS
 # Display dataset structure and summary statistics
 str(med)
-view(dfSummary(med))
+print(summary(med))
 
 # SECTION 4: VISUALIZATION
 # Create proportional bar chart showing relationship
@@ -50,22 +48,22 @@ results
 
 # SECTION 7: SUPPORTING UNIVARIATE ANALYSES
 # Bar chart for Marital Status distribution
-med %>%
-  count(Marital) %>%
-  plot_ly(x = ~Marital, y = ~n) %>%
-  add_bars()
+ggplot(med, aes(x = Marital)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Marital Status Distribution", x = "Marital Status", y = "Count") +
+  theme_minimal()
 
 # Bar chart for Initial Administration distribution
-med %>%
-  count(Initial_admin) %>%
-  plot_ly(x = ~Initial_admin, y = ~n) %>%
-  add_bars()
+ggplot(med, aes(x = Initial_admin)) +
+  geom_bar(fill = "coral") +
+  labs(title = "Initial Admin Distribution", x = "Initial Admin", y = "Count") +
+  theme_minimal()
 
 # SECTION 8: CONTINUOUS VARIABLE ANALYSIS
 # Boxplot and statistics for Age (outlier detection)
 boxplot(med$Age, main = "Age Distribution", ylab = "Years")
 boxplot.stats(med$Age)
-descr(med$Age)
+print(summary(med$Age))
 
 # Boxplot and statistics for Doctor Visits
 boxplot(med$Doc_visits, main = "Doctor Visits Distribution", ylab = "Visits")
@@ -75,15 +73,15 @@ boxplot.stats(med$Doc_visits)
 stat.desc(med$Income)
 summary(med$Age)
 
-med %>%
-  plot_ly(x = ~Income, y = ~Age) %>%
-  add_markers()
+ggplot(med, aes(x = Income, y = Age)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  labs(title = "Income vs Age", x = "Income ($)", y = "Age") +
+  theme_minimal()
 
-med %>%
-  count(Marital, Complication_risk) %>%
- plot_ly (x = ~Marital, y = ~n, color = ~Complication_risk) %>%
-  add_bars() %>%
-layout(barmode = "stack")
+ggplot(med, aes(x = Marital, fill = Complication_risk)) +
+  geom_bar(position = "stack") +
+  labs(title = "Complication Risk by Marital Status", x = "Marital Status", y = "Count") +
+  theme_minimal()
 
 #Two continuous variable descriptive stats for bivariate
 
@@ -111,7 +109,4 @@ bivar_continuous
 #          INDICES = age.gr, 
 #          FUN     = descr,      ####
 
-with(bivar_continuous,
-     stby(data = med$Income,
-          INDICES = Quantile_Age,
-          FUN = descr))
+tapply(bivar_continuous[, 2], Quantile_Age, summary)

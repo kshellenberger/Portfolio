@@ -77,7 +77,7 @@ print("Train and test data exported.")
 # SECTION 9: TIME SERIES DECOMPOSITION
 # Decompose original revenue series into components (trend, seasonal, random)
 decomposed_ts <- decompose(ts(data$Revenue, frequency = 2), type = "multiplicative")
-plot(decomposed_ts, main = "Time Series Decomposition")
+plot(decomposed_ts)
 print("Decomposition complete: Trend | Seasonal | Random components identified")
 
 # SECTION 10: AUTOCORRELATION ANALYSIS
@@ -109,7 +109,7 @@ forecast_values <- forecast_values[!is.na(test_data$Revenue)]
 rmse <- sqrt(mean((test_data$Revenue - forecast_values)^2))
 
 #residual plot
-residplot(forecast_result)
+checkresiduals(arima_model)
 
 # Print RMSE
 print(paste("RMSE:", round(rmse, 4)))
