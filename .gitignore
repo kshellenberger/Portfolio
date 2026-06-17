@@ -1,0 +1,4 @@
+*.Rmd
+train_data.csv
+test_data.csv
+.DS_Store
